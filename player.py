@@ -82,11 +82,8 @@ class Player:
         self.base_attack = self.calculate_attack()
         self.base_defense = self.calculate_defense()
         
-        # Cura a diferença de HP ganho
+        self.hp = self.max_hp  # Restaura HP ao máximo ao subir de nível
         hp_gained = self.max_hp - old_max_hp
-        self.hp += hp_gained
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
         
         print(f"\n✅ HP restaurado! (+{hp_gained} HP)")
         self.show_status()
