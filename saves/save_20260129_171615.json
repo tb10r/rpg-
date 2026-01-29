@@ -1,0 +1,80 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-01-29T17:16:15.102478",
+  "player": {
+    "name": "Ottinhogameplays",
+    "level": 3,
+    "xp": 59,
+    "max_hp": 110,
+    "hp": 110,
+    "strength": 4,
+    "vitality": 8,
+    "agility": 6,
+    "position": "8",
+    "inventory": [
+      {
+        "name": "Armadura de Ferro",
+        "type": "armor",
+        "description": "Uma armadura pesada que oferece excelente proteção.",
+        "attack_bonus": null,
+        "defense_bonus": 5,
+        "heal_amount": null
+      },
+      {
+        "name": "Espada Enferrujada",
+        "type": "weapon",
+        "description": "Uma espada velha, mas ainda afiada o suficiente.",
+        "attack_bonus": 3,
+        "defense_bonus": null,
+        "heal_amount": null
+      },
+      {
+        "name": "Escudo de Ferro",
+        "type": "shield",
+        "description": "Um escudo robusto feito de ferro forjado, oferecendo excelente proteção.",
+        "attack_bonus": null,
+        "defense_bonus": 4,
+        "heal_amount": null
+      },
+      {
+        "name": "espátula do Butcher",
+        "type": "weapon",
+        "description": "Uma espátula grande e afiada, usada pelo Mestre Butcher em suas batalhas e criações culinárias.",
+        "attack_bonus": 4,
+        "defense_bonus": null,
+        "heal_amount": null
+      }
+    ],
+    "equipped_weapon": {
+      "name": "espátula do Butcher",
+      "attack_bonus": 4
+    },
+    "equipped_shield": {
+      "name": "Escudo de Ferro",
+      "defense_bonus": 4
+    }
+  },
+  "world": {
+    "visited_rooms": [
+      "1",
+      "7",
+      "2",
+      "9",
+      "11",
+      "8",
+      "4",
+      "3"
+    ],
+    "defeated_enemies": [
+      "8",
+      "3",
+      "9"
+    ],
+    "looted_rooms": [
+      "8",
+      "4",
+      "7",
+      "3"
+    ]
+  }
+}

@@ -15,7 +15,7 @@ class Player:
             self.magic_power = 1.5     # 50% mais dano mágico
             self.melee_bonus = 0.7     # 30% menos dano corpo a corpo
         else:  # guerreiro
-            self.strength = 7          # Mais força
+            self.strength = 1111          # Mais força
             self.vitality = 6          # Mais vitalidade
             self.agility = 4           # Menos agilidade
             self.magic_power = 0.8     # 20% menos dano mágico
@@ -126,6 +126,7 @@ class Player:
         print(f"  Força: {self.strength} (Ataque: {self.calculate_attack()})")
         print(f"  Vitalidade: {self.vitality} (HP: {self.calculate_max_hp()})")
         print(f"  Agilidade: {self.agility} (Defesa: {self.calculate_defense()})")
+        print(f"  Mana Máxima: {self.max_mana}")
         
         while remaining > 0:
             print(f"\n{'='*40}")
@@ -134,26 +135,28 @@ class Player:
             print("1 - Força → Aumenta Ataque em +2 por ponto")
             print("2 - Vitalidade → Aumenta HP em +10 por ponto")
             print("3 - Agilidade → Aumenta Defesa em +1 e Taxa Crítico em +1% por ponto")
-            print("4 - Ver stats atuais")
+            print("4 - Mana → Aumenta Mana Máxima em +10 por ponto")
+            print("5 - Ver stats atuais")
             
             try:
                 choice = input("\nOnde investir? ").strip()
                 
-                if choice == '5' or choice.lower() == 'auto':
+                if choice == '6' or choice.lower() == 'auto':
                     self.auto_distribute_attributes(remaining)
                     break
                 
                 choice = int(choice)
                 
-                if choice == 4:
+                if choice == 5:
                     print(f"\n📊 Preview das stats:")
                     print(f"  Força: {self.strength} → Ataque: {self.calculate_attack()}")
                     print(f"  Vitalidade: {self.vitality} → HP: {self.calculate_max_hp()}")
                     print(f"  Agilidade: {self.agility} → Defesa: {self.calculate_defense()} | Crítico: {self.calculate_crit_chance()}%")
+                    print(f"  Mana Máxima: {self.max_mana}")
                     continue
                 
-                if choice not in [1, 2, 3]:
-                    print("❌ Opção inválida! Escolha 1-5")
+                if choice not in [1, 2, 3, 4]:
+                    print("❌ Opção inválida! Escolha 1-6")
                     continue
                 
                 # Pergunta quantos pontos investir
@@ -193,6 +196,13 @@ class Player:
                             print(f"✅ Agilidade aumentada em +{amount} (Total: {self.agility})!")
                             print(f"   Defesa será: {new_defense} (+{amount})")
                             print(f"   Taxa de Crítico será: {new_crit}% (+{amount}%)")
+                        
+                        elif choice == 4:
+                            old_max_mana = self.max_mana
+                            self.max_mana += (amount * 10)
+                            remaining -= amount
+                            print(f"✅ Mana Máxima aumentada em +{amount * 10} (Total: {self.max_mana})!")
+                            print(f"   Mana: {old_max_mana} → {self.max_mana}")
                         
                         break  # Sai do loop de quantidade
                     

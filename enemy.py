@@ -29,7 +29,7 @@ class Goblin(Enemy):
         super().__init__(
             name="Goblin",
             hp=50,          # ← 30 → 50 (mais resistente)
-            attack=10,      # ← 6 → 10 (mais forte)
+            attack=15,      # ← 6 → 10 → 15 (mais forte)
             defense=2,      # ← 2 → 4 (mais difícil de acertar)
             xp_reward=120,
             description="Um goblin pequeno, mas rápido, segura uma lâmina enferrujada."
@@ -43,7 +43,7 @@ class OrcChief(Enemy):
         super().__init__(
             name="Orc Chief",
             hp=90,
-            attack=20,
+            attack=28,
             defense=7,
             xp_reward=180,
             description="Um orc enorme bloqueia a passagem, com cicatrizes de batalhas antigas."
@@ -68,7 +68,7 @@ class MestreButcher(Enemy):
         super().__init__(
             name="Mestre Butcher",
             hp=80,
-            attack=14,
+            attack=20,
             defense=5,
             xp_reward=150,
             description="Um chefe de cozinha incrível que agora é só um esqueleto, porém ele ataca quem entra na cozinha dele."
@@ -93,7 +93,7 @@ class Spaghettus(Enemy):
         super().__init__(
             name="Spaghettus",
             hp=45,
-            attack=8,
+            attack=12,
             defense=2,
             xp_reward=89,
             description="Um macarrão que ganhou vida graças ao Mestre Butcher."
@@ -108,7 +108,7 @@ class Blackwarrior(Enemy):
         super().__init__(
             name="Blackwarrior",
             hp=100,
-            attack=18,
+            attack=25,
             defense=8,
             xp_reward=250,
             description="Um guerreiro sombrio que protege os segredos do altar."
@@ -132,7 +132,7 @@ class Necromancer(Enemy):
         super().__init__(
             name="Necromante",
             hp=120,
-            attack=16,
+            attack=22,
             defense=6,
             xp_reward=300,
             description="Um necromante poderoso envolto em vestes sombrias. Ossos flutuam ao seu redor."
@@ -163,7 +163,7 @@ class esqueleto(Enemy):
         super().__init__(
             name="Esqueleto",
             hp=60,
-            attack=12,
+            attack=16,
             defense=4,
             xp_reward=100,
             description="Um esqueleto reanimado que serve ao necromante."

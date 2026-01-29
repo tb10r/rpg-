@@ -1,6 +1,7 @@
 from player import Player
 from world import World
 from save_manager import SaveManager
+from minimap import MiniMap
 import sys
 
 
@@ -212,8 +213,9 @@ def show_actions():
     print("3 - Ver Inventário")
     print("4 - Usar Item")
     print("5 - Equipar/Desequipar")
-    print("6 - Salvar Jogo")
-    print("7 - Sair do Jogo")
+    print("6 - 🗺️  Ver Mapa")
+    print("7 - Salvar Jogo")
+    print("8 - Sair do Jogo")
 
 
 def handle_movement(world, player):
@@ -393,6 +395,12 @@ def game_loop(player, world):
             input("\n[Pressione Enter]")
         
         elif choice == "6":
+            # Ver Mapa
+            minimap = MiniMap(world)
+            minimap.show(player.position)
+            input("\n[Pressione Enter]")
+        
+        elif choice == "7":
             # Salvar
             filename = input("\nNome do save (ou Enter para automático): ").strip()
             if not filename:
@@ -403,7 +411,7 @@ def game_loop(player, world):
             save_mgr.save_game(player, world, filename)
             input("\n[Pressione Enter]")
         
-        elif choice == "7":
+        elif choice == "8":
             # Sair
             print("\n❓ Deseja salvar antes de sair? (s/n): ", end="")
             if input().strip().lower() == 's':
