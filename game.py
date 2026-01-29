@@ -128,6 +128,7 @@ def start_new_game():
     print("\n2 - 🔮 Mago")
     print("   • +50% de dano mágico")
     print("   • +30 Mana máxima (80 total)")
+    print("   • Começa com magia Raio Elétrico")
     print("   • -30% de dano corpo a corpo")
     
     while True:

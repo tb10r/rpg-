@@ -36,6 +36,11 @@ class Player:
         self.mana = self.max_mana
         self.known_spells = []  # Lista de magias aprendidas
         
+        # Mago começa com uma magia inicial
+        if player_class == "mago":
+            from items import lightning_bolt
+            self.known_spells.append(lightning_bolt)
+        
         self.inventory = []
         self.position = "1"
         self.equipped_weapon = None

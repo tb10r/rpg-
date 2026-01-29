@@ -267,7 +267,7 @@ class World:
             "leather_armor",
             "iron_armor",
             "fireball",
-            "lightning_bolt",
+            # "lightning_bolt" removido - mago começa com esta magia
             "ice_shard",
             "magical_heal",
             # Adicione mais itens aqui conforme criar
