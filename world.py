@@ -59,7 +59,7 @@ class World:
                 "name": "Saída",
                 "type": "exit",
                 "description": "Um feixe de luz natural entra pela passagem à frente.\nVocê sente o ar fresco pela primeira vez desde que entrou.",
-                "connections": {},
+                "connections": {"oeste": "5"},
                 "enemy": None,
                 "items": []
             },
