@@ -1,5 +1,5 @@
 import random
-from enemy import Goblin, OrcChief, MestreButcher, Blackwarrior, Spaghettus, esqueleto
+from enemy import Goblin, OrcChief, MestreButcher, Blackwarrior, Spaghettus, esqueleto, Necromancer, PrisionGuard,Shadowmage, Dragonwarrior
 
 class World:
     """Gerencia o mapa da dungeon como um grafo de salas"""
@@ -172,7 +172,7 @@ class World:
                 "type": "boss",
                 "description": "Sarcófagos quebrados e saqueados cercam um círculo necromântico.\nO ar é pesado com energia sombria.",
                 "connections": {"oeste": "19", "sul": "21"},
-                "enemy": "necromancer",
+                "enemy": "Necromancer",
                 "items": ["necromancer_robe", "necromancer_curser"]
             },
             "21": {
@@ -242,21 +242,30 @@ class World:
             "29": {
                 "name": "Salão dos Espelhos",
                 "type": "enemy",
-                "description": "Espelhos rachados refletem sua imagem distorcida.\nUm esqueleto se move entre os reflexos.",
+                "description": "Espelhos rachados refletem sua imagem distorcida.\nUm guarda se move entre os reflexos.",
                 "connections": {"norte": "28", "oeste": "30"},
-                "enemy": "esqueleto",
+                "enemy": "PrisionGuard",
                 "items": []
             },
             "30": {
                 "name": "Prisão Abandonada",
                 "type": "treasure",
                 "description": "Celas enferrujadas com correntes penduradas.\nUm baú do carcereiro está em um canto.",
-                "connections": {"leste": "29"},
+                "connections": {"leste": "29", "sul": "31"},
                 "enemy": None,
                 "items": []
-            }
+            },
+        
+
+            "31": {
+                "name": "Câmara dos Duelistas",
+                "type": "multi_enemy",
+                "description": "Dois guerreiros mortos-vivos empunham suas armas em posição de combate.\nSuas armaduras enferrujadas brilham fracamente à luz das tochas.",
+                "connections": {"norte": "30",},  # Ajuste as conexões conforme seu mapa
+                "enemies": ["Dragonwarrior", "Shadowmage"],  # Ou outro inimigo que preferir
+                "items": ["dragon_lance", "shadow_grimoire"]  # Machado de Batalha + Espada Flamejante
+            },
         }
-    
     def randomize_treasure_loot(self):
         """Distribui itens aleatoriamente nos baús de tesouro sem repetição"""
         # Lista de todos os itens disponíveis para baús
@@ -267,12 +276,19 @@ class World:
             "leather_armor",
             "iron_armor",
             "fireball",
-            # "lightning_bolt" removido - mago começa com esta magia
             "ice_shard",
             "magical_heal",
-            # Adicione mais itens aqui conforme criar
+            # Armas do Guerreiro
+            "battle_axe",
+            "flaming_sword",
+            # Armas Mágicas
+            "crystal_orb",
+            "ice_wand",
+            "ancient_staff",
+            "fire_staff",
+            "lightning_rod",
         ]
-        
+                
         # Meteoro tem 33% de chance de aparecer
         if random.random() < 0.33:
             available_items.append("meteor")
@@ -299,11 +315,13 @@ class World:
         # Distribui itens únicos para cada baú
         item_index = 0
         for room_id in treasure_rooms:
-            # Cada baú terá apenas 1 item
+            # Cada baú terá apenas 2-3 itens
             room_items = []
-            if item_index < len(available_items):
-                room_items.append(available_items[item_index])
-                item_index += 1
+            items_per_chest = random.randint(2, 3)  # Entre 2 e 3 itens
+            for _ in range(items_per_chest):
+                if item_index < len(available_items):
+                    room_items.append(available_items[item_index])
+                    item_index += 1
             
             # Adiciona a chave no baú escolhido
             if room_id == key_room:
@@ -449,12 +467,45 @@ class World:
             return Blackwarrior()
         elif enemy_type == "esqueleto":
             return esqueleto()
+        elif enemy_type == "necromancer":
+            return Necromancer()
+        elif enemy_type == "prision_guard":
+            return PrisionGuard()
+        elif enemy_type == "shadowmage":
+            return Shadowmage()
+        elif enemy_type == "dragonwarrior":
+            return Dragonwarrior()
+        
+        return None
+    
+    def create_enemy_by_name(self, enemy_name):
+        """Cria instância de inimigo baseado no nome"""
+        if enemy_name == "goblin":
+            return Goblin()
+        elif enemy_name == "orc_chief":
+            return OrcChief()
+        elif enemy_name == "mestre_butcher":
+            return MestreButcher()
+        elif enemy_name == "spaghettus":
+            return Spaghettus()
+        elif enemy_name == "blackwarrior":
+            return Blackwarrior()
+        elif enemy_name == "esqueleto":
+            return esqueleto()
+        elif enemy_name == "necromancer":
+            return Necromancer()
+        elif enemy_name == "prision_guard":
+            return PrisionGuard()
+        elif enemy_name == "shadowmage":
+            return Shadowmage()
+        elif enemy_name == "dragonwarrior":
+            return Dragonwarrior()
         
         return None
     
     def get_item_from_room(self, room_id):
         """Retorna instância do item da sala"""
-        from items import rusty_sword, simple_shield, health_potion, exit_key, summoning_rune, necromancer_rune, iron_shield, leather_armor, iron_armor, necromancer_robe, Blackwarrior_sword, Blackwarrior_armor, butcher_spatula, fireball, lightning_bolt, ice_shard, magical_heal, meteor, necromancer_curser
+        from items import rusty_sword, simple_shield, health_potion, exit_key, summoning_rune, necromancer_rune, iron_shield, leather_armor, iron_armor, necromancer_robe, Blackwarrior_sword, Blackwarrior_armor, butcher_spatula, fireball, lightning_bolt, ice_shard, magical_heal, meteor, necromancer_curser, battle_axe, flaming_sword, war_hammer, dragon_lance, crystal_orb, ice_wand, ancient_staff, shadow_grimoire, fire_staff, lightning_rod
         
         item_names = self.get_treasure(room_id)
         
@@ -483,7 +534,17 @@ class World:
             "ice_shard": ice_shard,
             "magical_heal": magical_heal,
             "meteor": meteor,
-            "necromancer_curser": necromancer_curser
+            "necromancer_curser": necromancer_curser,
+            "battle_axe": battle_axe,
+            "flaming_sword": flaming_sword,
+            "war_hammer": war_hammer,
+            "dragon_lance": dragon_lance,
+            "crystal_orb": crystal_orb,
+            "ice_wand": ice_wand,
+            "ancient_staff": ancient_staff,
+            "shadow_grimoire": shadow_grimoire,
+            "fire_staff": fire_staff,
+            "lightning_rod": lightning_rod,
         }
         
         items = []
@@ -642,6 +703,80 @@ class World:
                 print("💡 Você precisa encontrar a Chave da Saída para escapar.")
                 print("   Procure nos baús pela dungeon...")
                 return {"event": "locked_exit"}
+        
+        # Verifica se há MÚLTIPLOS inimigos (novo sistema)
+        room = self.get_room(room_id)
+        if "enemies" in room and room["enemies"] and room_id not in self.defeated_enemies:
+            print(f"\n⚔️  MÚLTIPLOS INIMIGOS APARECEM!")
+            
+            enemies_list = room["enemies"]
+            all_defeated = True
+            
+            for i, enemy_name in enumerate(enemies_list, 1):
+                enemy = self.create_enemy_by_name(enemy_name)
+                
+                if not enemy:
+                    continue
+                    
+                print(f"\n{'='*60}")
+                print(f"🗡️  COMBATE {i}/{len(enemies_list)}: {enemy.name}")
+                print(f"{'='*60}")
+                print(f"{enemy.description}")
+                
+                combat = Combat(player, enemy)
+                result = combat.run_combat()
+                
+                if result["result"] == "defeat":
+                    all_defeated = False
+                    return {"event": "combat", "result": "defeat"}
+                
+                elif result["result"] == "fled":
+                    return {"event": "combat", "result": "fled"}
+                
+                print(f"\n✅ {enemy.name} derrotado! ({i}/{len(enemies_list)})")
+                
+                # Cura pequena entre combates (exceto no último)
+                if i < len(enemies_list):
+                    heal = 15
+                    player.heal(heal)
+                    player.restore_mana(10)
+                    print(f"💚 Você recupera {heal} HP e 10 mana entre combates!")
+                    input("\n[Pressione Enter para o próximo combate]")
+            
+            if all_defeated:
+                self.defeat_enemy(room_id)
+                
+                # Coleta drops de TODOS os inimigos
+                items = self.get_item_from_room(room_id)
+                if items:
+                    print(f"\n💎 Você encontrou {len(items)} item(ns) dos inimigos derrotados!")
+                    for item in items:
+                        if item.item_type == "spell":
+                            player.learn_spell(item)
+                            print(f"  ✨ {item.name} - Magia aprendida!")
+                        else:
+                            player.add_to_inventory(item)
+                            print(f"  ✓ {item.name}")
+                        
+                        # Pergunta se quer equipar
+                        if item.item_type == "weapon":
+                            equip = input(f"\n⚔️  Equipar {item.name}? (s/n): ").strip().lower()
+                            if equip == 's':
+                                player.equip_weapon(item)
+                        elif item.item_type == "shield":
+                            equip = input(f"\n🛡️  Equipar {item.name}? (s/n): ").strip().lower()
+                            if equip == 's':
+                                player.equip_shield(item)
+                        elif item.item_type == "armor":
+                            equip = input(f"\n🛡️  Equipar {item.name}? (s/n): ").strip().lower()
+                            if equip == 's':
+                                player.equip_armor(item)
+                
+                return {
+                    "event": "combat",
+                    "result": "victory",
+                    "enemy": "múltiplos inimigos"
+                }
         
         # Verifica se há inimigo
         if self.has_enemy(room_id):

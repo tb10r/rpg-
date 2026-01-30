@@ -65,7 +65,7 @@
       |
     [28] Arsenal Secreto
       |
-    [29] Salão Espelhos (Esqueleto)
+    [29] Salão Espelhos (Prisionguard)
       |
     [30] Prisão
 ```

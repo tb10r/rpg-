@@ -169,3 +169,45 @@ class esqueleto(Enemy):
             description="Um esqueleto reanimado que serve ao necromante."
         )
         self.can_flee = True
+
+class PrisionGuard(Enemy):
+    """O Guarda de prisão corrompido"""
+    
+    def __init__(self):
+        super().__init__(
+            name="O Guarda de Prisão Corrompido",
+            hp=80,
+            attack=19,
+            defense=6,
+            xp_reward=150,
+            description="Um guarda de prisão que foi corrompido."
+        )
+        self.can_flee = True
+
+class Shadowmage(Enemy):
+    """mago das sombras que habita as câmara"""
+    
+    def __init__(self):
+        super().__init__(
+            name="mago das Sombras",
+            hp=90,
+            attack=15,
+            defense=4,
+            xp_reward=220,
+            description="Um mago das sombras que se move nas sombras das câmara."
+        )
+        self.can_flee = False
+
+class Dragonwarrior(Enemy):
+    """Guerreiro dragão que protege a câmara"""
+    
+    def __init__(self):
+        super().__init__(
+            name="Guerreiro Dragão",
+            hp=100,
+            attack=17,
+            defense=9,
+            xp_reward=280,
+            description="Um guerreiro dragão que protege a câmara com sua força imensa."
+        )
+        self.can_flee = False

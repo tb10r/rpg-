@@ -15,7 +15,7 @@ class Player:
             self.magic_power = 1.5     # 50% mais dano mágico
             self.melee_bonus = 0.7     # 30% menos dano corpo a corpo
         else:  # guerreiro
-            self.strength = 4          # Mais força
+            self.strength = 5          # Mais força
             self.vitality = 6          # Mais vitalidade
             self.agility = 4           # Menos agilidade
             self.magic_power = 0.8     # 20% menos dano mágico
@@ -367,11 +367,15 @@ class Player:
         return False
     
     def get_total_attack(self):
-        """Retorna ataque total (base + equipamentos + bônus de classe)"""
-        total = self.base_attack
+        """Calcula ataque total (base + arma + bônus de classe)"""
+        weapon_bonus = 0
         if self.equipped_weapon:
-            total += self.equipped_weapon.attack_bonus
-        # Aplica bônus/penalidade de classe para combate corpo a corpo
+            # Armas mágicas não dão bônus de ataque físico
+            if not self.equipped_weapon.is_magical:
+                weapon_bonus = self.equipped_weapon.attack_bonus
+        
+        total = self.base_attack + weapon_bonus
+        # Aplica bônus/penalidade de classe no ataque corpo a corpo
         total = int(total * self.melee_bonus)
         return total
     
