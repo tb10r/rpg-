@@ -1,5 +1,44 @@
 local DungeonConfig = {}
 
+DungeonConfig.PlayerMaxHp = 100
+DungeonConfig.PlayerStartHp = 100
+DungeonConfig.PlayerBaseDamage = 1
+DungeonConfig.PlayerBaseDefense = 0
+DungeonConfig.GoblinMaxHp = 3
+DungeonConfig.GoblinCounterDamage = 10
+DungeonConfig.GoblinCoinReward = 20
+DungeonConfig.ExitBossMaxHp = 5
+DungeonConfig.ExitBossCounterDamage = 14
+DungeonConfig.AltarCost = 20
+DungeonConfig.AltarDamageBonus = 1
+DungeonConfig.AltarBlessingName = "Força Ancestral"
+DungeonConfig.ChestRewards = {
+	{
+		name = "Poção de Cura",
+		effect = "heal",
+		amount = 25,
+		summary = "+25 HP",
+	},
+	{
+		name = "Punhado de Moedas",
+		effect = "coins",
+		amount = 30,
+		summary = "+30 moedas",
+	},
+	{
+		name = "Pedra de Afiar",
+		effect = "damage",
+		amount = 1,
+		summary = "+1 dano",
+	},
+	{
+		name = "Escudo Antigo",
+		effect = "defense",
+		amount = 1,
+		summary = "+1 defesa",
+	},
+}
+
 DungeonConfig.RoomDisplayNames = {
 	StartRoom = "Sala Inicial",
 	GoblinRoom = "Sala do Goblin",
@@ -20,8 +59,79 @@ DungeonConfig.TriggerName = "RoomTrigger"
 DungeonConfig.Markers = {
 	Goblin = "GoblinMarker",
 	Chest = "ChestMarker",
+	Guardian = "GuardianMarker",
+	Altar = "AltarMarker",
 	Exit = "ExitMarker",
 }
+
+local function getRewardText(state)
+	local rewardName = state.chestReward or "um tesouro misterioso"
+	local rewardSummary = state.chestRewardSummary
+	if rewardSummary and rewardSummary ~= "" then
+		return string.format("%s (%s)", rewardName, rewardSummary)
+	end
+	return rewardName
+end
+
+function DungeonConfig.getTotalDamage(state)
+	state = state or {}
+	return DungeonConfig.PlayerBaseDamage + (state.bonusDamage or 0)
+end
+
+function DungeonConfig.getTotalDefense(state)
+	state = state or {}
+	return DungeonConfig.PlayerBaseDefense + (state.bonusDefense or 0)
+end
+
+function DungeonConfig.getStatsText(state)
+	state = state or {}
+
+	local currentHp = state.playerHp or DungeonConfig.PlayerStartHp
+	local maxHp = state.playerMaxHp or DungeonConfig.PlayerMaxHp
+	local coins = state.coins or 0
+	local damage = DungeonConfig.getTotalDamage(state)
+	local defense = DungeonConfig.getTotalDefense(state)
+
+	return string.format("HP: %d/%d | Moedas: %d | Dano: %d | Defesa: %d", currentHp, maxHp, coins, damage, defense)
+end
+
+function DungeonConfig.getStatsData(state)
+	state = state or {}
+
+	local currentHp = state.playerHp or DungeonConfig.PlayerStartHp
+	local maxHp = state.playerMaxHp or DungeonConfig.PlayerMaxHp
+	local coins = state.coins or 0
+	local damage = DungeonConfig.getTotalDamage(state)
+	local defense = DungeonConfig.getTotalDefense(state)
+
+	return {
+		hp = currentHp,
+		maxHp = maxHp,
+		coins = coins,
+		damage = damage,
+		defense = defense,
+	}
+end
+
+function DungeonConfig.getVictoryText(state)
+	state = state or {}
+	local altarLine = ""
+	local guardianLine = ""
+	if state.altarUsed then
+		altarLine = string.format("\nBênção do altar: %s (+%d dano)", DungeonConfig.AltarBlessingName, DungeonConfig.AltarDamageBonus)
+	end
+	if state.exitBossDefeated then
+		guardianLine = "\nGuardião final derrotado."
+	end
+
+	return string.format(
+		"Você escapou da dungeon.\nRecompensa do baú: %s%s%s\n%s",
+		getRewardText(state),
+		guardianLine,
+		altarLine,
+		DungeonConfig.getStatsText(state)
+	)
+end
 
 function DungeonConfig.getObjective(roomName, state)
 	state = state or {}
@@ -32,9 +142,13 @@ function DungeonConfig.getObjective(roomName, state)
 
 	if roomName == "GoblinRoom" then
 		if state.goblinDefeated then
-			return "Goblin derrotado. Vá até a sala do tesouro."
+			return string.format(
+				"Goblin derrotado. Você ganhou %d moedas. Vá até a sala do tesouro.",
+				DungeonConfig.GoblinCoinReward
+			)
 		end
-		return "Derrote o Goblin."
+		local currentHp = state.goblinHp or DungeonConfig.GoblinMaxHp
+		return string.format("Derrote o Goblin. HP restante: %d/%d.", currentHp, DungeonConfig.GoblinMaxHp)
 	end
 
 	if roomName == "TreasureRoom" then
@@ -42,17 +156,59 @@ function DungeonConfig.getObjective(roomName, state)
 			return "Antes do baú, você precisa derrotar o Goblin."
 		end
 		if state.chestOpened then
-			return "Baú aberto. Vá até a saída."
+			if not state.altarUsed and (state.coins or 0) >= DungeonConfig.AltarCost then
+				return string.format(
+					"Baú aberto. Você recebeu: %s. Vá até a saída, use o altar se quiser comprar %s por %d moedas e prepare-se para o Guardião.",
+					getRewardText(state),
+					DungeonConfig.AltarBlessingName,
+					DungeonConfig.AltarCost
+				)
+			end
+			return string.format("Baú aberto. Você recebeu: %s. Vá até a saída e enfrente o Guardião.", getRewardText(state))
 		end
 		return "Abra o baú."
 	end
 
 	if roomName == "ExitRoom" then
 		if state.runComplete then
-			return "Vitória! Você escapou."
+			return "Vitória! A tela final já apareceu."
 		end
 		if state.goblinDefeated and state.chestOpened then
-			return "A saída está livre. Use o prompt para escapar."
+			local currentCoins = state.coins or 0
+			local bossHp = state.exitBossHp or DungeonConfig.ExitBossMaxHp
+			local totalDamage = DungeonConfig.getTotalDamage(state)
+			local totalDefense = DungeonConfig.getTotalDefense(state)
+
+			if not state.exitBossDefeated then
+				if not state.altarUsed and currentCoins >= DungeonConfig.AltarCost then
+					return string.format(
+						"O Guardião bloqueia a saída. Use o altar para comprar %s ou ataque agora. HP do Guardião: %d/%d. Seu dano: %d. Sua defesa: %d.",
+						DungeonConfig.AltarBlessingName,
+						bossHp,
+						DungeonConfig.ExitBossMaxHp,
+						totalDamage,
+						totalDefense
+					)
+				end
+
+				return string.format(
+					"O Guardião bloqueia a saída. Ataque-o para abrir o caminho. HP do Guardião: %d/%d. Seu dano: %d. Sua defesa: %d.",
+					bossHp,
+					DungeonConfig.ExitBossMaxHp,
+					totalDamage,
+					totalDefense
+				)
+			end
+
+			if state.altarUsed then
+				return string.format(
+					"Guardião derrotado. A bênção %s já foi comprada. Leve %s com você e use o prompt para escapar.",
+					DungeonConfig.AltarBlessingName,
+					getRewardText(state)
+				)
+			end
+
+			return string.format("Guardião derrotado. Leve %s com você e use o prompt para escapar.", getRewardText(state))
 		end
 		return "Ainda não é hora de sair."
 	end

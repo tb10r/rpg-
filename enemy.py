@@ -23,7 +23,7 @@ class Enemy:
         return self.attack
 
 
-class 43(Enemy):
+class Goblin(Enemy):
     
     def __init__(self):
         super().__init__(

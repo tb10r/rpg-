@@ -6,9 +6,13 @@ Objetivo deste pacote:
 
 - mostrar o nome da sala na HUD
 - mostrar o objetivo atual na HUD
+- mostrar os status da run na HUD
 - permitir derrotar o Goblin via ProximityPrompt
-- permitir abrir o baú via ProximityPrompt
+- permitir abrir o baú via ProximityPrompt e receber uma recompensa com efeito real
+- permitir gastar moedas em um altar antes de sair
+- permitir enfrentar um guardião final usando dano e defesa da run
 - permitir sair da dungeon quando as condições forem cumpridas
+- mostrar uma tela simples de vitória no fim da run
 
 ## Estrutura esperada no Roblox Studio
 
@@ -27,6 +31,10 @@ Workspace
       - ProximityPrompt
   - ExitRoom
     - RoomTrigger
+    - GuardianMarker
+      - ProximityPrompt
+    - AltarMarker
+      - ProximityPrompt
     - ExitMarker
       - ProximityPrompt
 
@@ -50,6 +58,10 @@ StarterGui
   - ObjectiveLabel
   - HUDController (LocalScript)
 
+Observação:
+
+- StatsLabel e VictoryFrame são criados automaticamente pelo HUDController. Você não precisa montar esses dois objetos manualmente.
+
 ## Nomes importantes
 
 Os nomes abaixo precisam bater exatamente:
@@ -62,6 +74,8 @@ Os nomes abaixo precisam bater exatamente:
 - GoblinMarker
 - ChestMarker
 - ExitMarker
+- GuardianMarker
+- AltarMarker
 - RoomChanged
 - ObjectiveChanged
 - DungeonConfig
@@ -91,6 +105,14 @@ Sugestão de texto:
   - ActionText = "Abrir"
   - ObjectText = "Baú"
 
+- AltarMarker > ProximityPrompt
+  - ActionText = "Oferecer Moedas"
+  - ObjectText = "Altar"
+
+- GuardianMarker > ProximityPrompt
+  - ActionText = "Atacar"
+  - ObjectText = "Guardião"
+
 - ExitMarker > ProximityPrompt
   - ActionText = "Sair"
   - ObjectText = "Saída"
@@ -104,7 +126,9 @@ Sugestão de texto:
 ## Fluxo esperado ao testar
 
 1. Jogador entra e vê a Sala Inicial.
-2. Jogador entra em GoblinRoom e o objetivo muda para derrotar o Goblin.
-3. Ao usar o prompt do Goblin, o objetivo muda para ir ao tesouro.
-4. Ao abrir o baú, o objetivo muda para ir à saída.
-5. Ao usar a saída, aparece a mensagem de vitória na HUD.
+2. Jogador entra em GoblinRoom, vê o HP do Goblin e os status da run na HUD.
+3. Ao usar o prompt do Goblin, o Goblin perde HP, o jogador leva contra-ataque até vencer e ganha 20 moedas ao derrotá-lo.
+4. Ao abrir o baú, uma recompensa é sorteada e aplicada na run.
+5. Se o jogador tiver moedas suficientes, ele pode usar o altar na saída para comprar +1 dano por 20 moedas.
+6. O Guardião final bloqueia a saída; o dano da run reduz o HP dele e a defesa reduz o contra-ataque.
+7. Ao derrotar o Guardião e usar a saída, aparece um painel de vitória com a recompensa e os status finais.

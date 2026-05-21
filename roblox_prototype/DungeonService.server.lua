@@ -7,15 +7,76 @@ local objectiveChangedEvent = remotesFolder:WaitForChild("ObjectiveChanged")
 
 local config = require(ReplicatedStorage:WaitForChild("Configs"):WaitForChild("DungeonConfig"))
 local roomsFolder = workspace:WaitForChild(config.RoomsFolderName)
+local rng = Random.new()
 
 local playerState = {}
+
+local function buildHudData(state)
+	return {
+		statsText = config.getStatsText(state),
+		statsData = config.getStatsData(state),
+		runComplete = state.runComplete,
+		victoryText = config.getVictoryText(state),
+	}
+end
+
+local function applyRewardEffect(state, reward)
+	local rewardName = reward.name or "Tesouro Misterioso"
+	local rewardAmount = reward.amount or 0
+	local rewardEffect = reward.effect
+
+	state.chestReward = rewardName
+	state.chestRewardSummary = reward.summary or ""
+
+	if rewardEffect == "heal" then
+		local currentHp = state.playerHp or config.PlayerStartHp or config.PlayerMaxHp
+		local maxHp = state.playerMaxHp or config.PlayerMaxHp
+		local healedHp = math.min(maxHp, currentHp + rewardAmount)
+		local restoredAmount = healedHp - currentHp
+
+		state.playerHp = healedHp
+		if restoredAmount > 0 then
+			state.chestRewardSummary = string.format("+%d HP", restoredAmount)
+		else
+			state.chestRewardSummary = "vida cheia"
+		end
+		return
+	end
+
+	if rewardEffect == "coins" then
+		state.coins = (state.coins or 0) + rewardAmount
+		return
+	end
+
+	if rewardEffect == "damage" then
+		state.bonusDamage = (state.bonusDamage or 0) + rewardAmount
+		return
+	end
+
+	if rewardEffect == "defense" then
+		state.bonusDefense = (state.bonusDefense or 0) + rewardAmount
+		return
+	end
+end
 
 local function getState(player)
 	if not playerState[player] then
 		playerState[player] = {
 			currentRoom = "StartRoom",
+			playerMaxHp = config.PlayerMaxHp,
+			playerHp = config.PlayerStartHp or config.PlayerMaxHp,
+			coins = 0,
+			bonusDamage = 0,
+			bonusDefense = 0,
+			goblinHp = config.GoblinMaxHp,
 			goblinDefeated = false,
+			exitBossHp = config.ExitBossMaxHp,
+			exitBossDefeated = false,
 			chestOpened = false,
+			chestReward = nil,
+			chestRewardSummary = nil,
+			altarUsed = false,
+			altarBlessing = nil,
 			runComplete = false,
 		}
 	end
@@ -28,9 +89,10 @@ local function pushHud(player)
 	local roomName = state.currentRoom or "StartRoom"
 	local displayName = config.RoomDisplayNames[roomName] or roomName
 	local objectiveText = config.getObjective(roomName, state)
+	local hudData = buildHudData(state)
 
-	roomChangedEvent:FireClient(player, displayName, objectiveText)
-	objectiveChangedEvent:FireClient(player, objectiveText)
+	roomChangedEvent:FireClient(player, displayName, objectiveText, hudData)
+	objectiveChangedEvent:FireClient(player, objectiveText, hudData)
 end
 
 local function setCurrentRoom(player, roomName)
@@ -106,7 +168,16 @@ local function defeatGoblin(player)
 		return
 	end
 
-	state.goblinDefeated = true
+	state.goblinHp = math.max(0, (state.goblinHp or config.GoblinMaxHp) - 1)
+	if state.goblinHp <= 0 then
+		state.goblinDefeated = true
+		state.coins = (state.coins or 0) + (config.GoblinCoinReward or 0)
+	else
+		local counterDamage = math.max(0, (config.GoblinCounterDamage or 0) - (state.bonusDefense or 0))
+		if counterDamage > 0 then
+			state.playerHp = math.max(1, (state.playerHp or state.playerMaxHp or config.PlayerMaxHp) - counterDamage)
+		end
+	end
 	pushHud(player)
 end
 
@@ -123,7 +194,90 @@ local function openChest(player)
 		return
 	end
 
+	local rewardPool = config.ChestRewards or {}
+	if #rewardPool > 0 then
+		local rewardIndex = rng:NextInteger(1, #rewardPool)
+		local reward = rewardPool[rewardIndex]
+		if type(reward) == "string" then
+			reward = {
+				name = reward,
+			}
+		end
+		applyRewardEffect(state, reward)
+	else
+		state.chestReward = "um tesouro misterioso"
+		state.chestRewardSummary = "efeito desconhecido"
+	end
 	state.chestOpened = true
+	pushHud(player)
+end
+
+local function useAltar(player)
+	local state = getState(player)
+
+	if not state.goblinDefeated then
+		pushHud(player)
+		return
+	end
+
+	if not state.chestOpened then
+		pushHud(player)
+		return
+	end
+
+	if state.exitBossDefeated then
+		pushHud(player)
+		return
+	end
+
+	if state.altarUsed then
+		pushHud(player)
+		return
+	end
+
+	local altarCost = config.AltarCost or 0
+	if (state.coins or 0) < altarCost then
+		pushHud(player)
+		return
+	end
+
+	state.coins = (state.coins or 0) - altarCost
+	state.bonusDamage = (state.bonusDamage or 0) + (config.AltarDamageBonus or 0)
+	state.altarUsed = true
+	state.altarBlessing = config.AltarBlessingName or "Bênção do Altar"
+	pushHud(player)
+end
+
+local function fightGuardian(player)
+	local state = getState(player)
+
+	if not state.goblinDefeated then
+		pushHud(player)
+		return
+	end
+
+	if not state.chestOpened then
+		pushHud(player)
+		return
+	end
+
+	if state.exitBossDefeated then
+		pushHud(player)
+		return
+	end
+
+	local playerDamage = math.max(1, config.getTotalDamage(state))
+	state.exitBossHp = math.max(0, (state.exitBossHp or config.ExitBossMaxHp) - playerDamage)
+
+	if state.exitBossHp <= 0 then
+		state.exitBossDefeated = true
+	else
+		local counterDamage = math.max(0, (config.ExitBossCounterDamage or 0) - config.getTotalDefense(state))
+		if counterDamage > 0 then
+			state.playerHp = math.max(1, (state.playerHp or state.playerMaxHp or config.PlayerMaxHp) - counterDamage)
+		end
+	end
+
 	pushHud(player)
 end
 
@@ -136,6 +290,11 @@ local function tryExit(player)
 	end
 
 	if not state.chestOpened then
+		pushHud(player)
+		return
+	end
+
+	if not state.exitBossDefeated then
 		pushHud(player)
 		return
 	end
@@ -156,6 +315,14 @@ end)
 
 bindPrompt("TreasureRoom", config.Markers.Chest, function(player)
 	openChest(player)
+end)
+
+bindPrompt("ExitRoom", config.Markers.Altar, function(player)
+	useAltar(player)
+end)
+
+bindPrompt("ExitRoom", config.Markers.Guardian, function(player)
+	fightGuardian(player)
 end)
 
 bindPrompt("ExitRoom", config.Markers.Exit, function(player)
